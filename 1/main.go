@@ -35,26 +35,20 @@ func main() {
 	}
 
 	// Puzzle one
-	prevDepth, totalIncreases := 0, -1
-
-	for _, depth := range depths {
-		if depth > prevDepth {
+	totalIncreases := 0
+	for i := range depths[:len(depths)-1] {
+		if depths[i+1] > depths[i] {
 			totalIncreases++
 		}
-		prevDepth = depth
 	}
-
 	fmt.Printf("Total Increases problem 1: %v\n", totalIncreases)
 
 	// Puzzle two
-	prevDepth, totalIncreases = 0, -1
-	for i := range depths[:len(depths)-2] {
-		curDepth := depths[i] + depths[i+1] + depths[i+2]
-		if curDepth > prevDepth {
+	totalIncreases = 0
+	for i := range depths[:len(depths)-3] {
+		if depths[i+3] > depths[i] {
 			totalIncreases++
 		}
-		prevDepth = curDepth
 	}
-
 	fmt.Printf("Total Increases problem 2: %v\n", totalIncreases)
 }
