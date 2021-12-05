@@ -48,40 +48,17 @@ func main() {
 	}
 
 	// Puzzle one
-	maxX := findMaxX(segments)
-	maxY := findMaxY(segments)
+	maxX, maxY := findMaxXY(segments)
 
-	// var ventMap [maxX][maxY]int
-
-	ventMap := make([][]int, 0)
+	ventMap := make([][]int, maxY+1)
 	for i := 0; i <= maxY; i++ {
-		row := make([]int, 0)
-		for j := 0; j <= maxX; j++ {
-			row = append(row, 0)
-		}
-		ventMap = append(ventMap, row)
+		ventMap[i] = make([]int, maxX+1)
 	}
 
 	for _, segm := range segments {
-		if segm.x1 == segm.x2 {
-			if segm.y1 > segm.y2 {
-				for i := segm.y2; i <= segm.y1; i++ {
-					ventMap[i][segm.x1]++
-				}
-			} else {
-				for i := segm.y1; i <= segm.y2; i++ {
-					ventMap[i][segm.x1]++
-				}
-			}
-		} else if segm.y1 == segm.y2 {
-			if segm.x1 > segm.x2 {
-				for i := segm.x2; i <= segm.x1; i++ {
-					ventMap[segm.y1][i]++
-				}
-			} else {
-				for i := segm.x1; i <= segm.x2; i++ {
-					ventMap[segm.y1][i]++
-				}
+		if segm.x1 == segm.x2 || segm.y1 == segm.y2 {
+			for i := 0; i <= max(abs(segm.x2-segm.x1), abs(segm.y2-segm.y1)); i++ {
+				ventMap[segm.x1+(i*sign(segm.x2-segm.x1))][segm.y1+(i*sign(segm.y2-segm.y1))]++
 			}
 		}
 	}
@@ -98,56 +75,14 @@ func main() {
 	fmt.Printf("Puzzle one points: %d\n", puzzleOnePoints)
 
 	//Puzzle 2
-	secondMap := make([][]int, 0)
+	secondMap := make([][]int, maxY+1)
 	for i := 0; i <= maxY; i++ {
-		row := make([]int, 0)
-		for j := 0; j <= maxX; j++ {
-			row = append(row, 0)
-		}
-		secondMap = append(secondMap, row)
-
+		secondMap[i] = make([]int, maxX+1)
 	}
+
 	for _, segm := range segments {
-		if segm.x1 == segm.x2 {
-			if segm.y1 > segm.y2 {
-				for i := segm.y2; i <= segm.y1; i++ {
-					secondMap[i][segm.x1]++
-				}
-			} else {
-				for i := segm.y1; i <= segm.y2; i++ {
-					secondMap[i][segm.x1]++
-				}
-			}
-		} else if segm.y1 == segm.y2 {
-			if segm.x1 > segm.x2 {
-				for i := segm.x2; i <= segm.x1; i++ {
-					secondMap[segm.y1][i]++
-				}
-			} else {
-				for i := segm.x1; i <= segm.x2; i++ {
-					secondMap[segm.y1][i]++
-				}
-			}
-		} else if segm.x1 < segm.x2 {
-			if segm.y1 < segm.y2 {
-				for i := 0; i <= segm.y2-segm.y1; i++ {
-					secondMap[segm.y1+i][segm.x1+i]++
-				}
-			} else {
-				for i := 0; i <= segm.y1-segm.y2; i++ {
-					secondMap[segm.y1-i][segm.x1+i]++
-				}
-			}
-		} else if segm.x1 > segm.x2 {
-			if segm.y1 < segm.y2 {
-				for i := 0; i <= segm.y2-segm.y1; i++ {
-					secondMap[segm.y1+i][segm.x1-i]++
-				}
-			} else {
-				for i := 0; i <= segm.y1-segm.y2; i++ {
-					secondMap[segm.y1-i][segm.x1-i]++
-				}
-			}
+		for i := 0; i <= max(abs(segm.x2-segm.x1), abs(segm.y2-segm.y1)); i++ {
+			secondMap[segm.x1+(i*sign(segm.x2-segm.x1))][segm.y1+(i*sign(segm.y2-segm.y1))]++
 		}
 	}
 
@@ -159,9 +94,7 @@ func main() {
 			}
 		}
 	}
-
 	fmt.Printf("Puzzle two points: %d\n", puzzleTwoPoints)
-
 }
 
 func abs(val int) int {
@@ -171,21 +104,25 @@ func abs(val int) int {
 	return val
 }
 
-func findMaxX(segments []segment) int {
-	maxX := 0
-	for _, segm := range segments {
-		if segm.x1 > maxX {
-			maxX = segm.x1
-		}
-		if segm.x2 > maxX {
-			maxX = segm.x2
-		}
+func sign(x int) int {
+	if x == 0 {
+		return 0
 	}
-	return maxX
+	if x > 0 {
+		return 1
+	} else {
+		return -1
+	}
 }
 
-func findMaxY(segments []segment) int {
-	maxY := 0
+func max(x int, y int) int {
+	if y > x {
+		return y
+	}
+	return x
+}
+
+func findMaxXY(segments []segment) (maxX int, maxY int) {
 	for _, segm := range segments {
 		if segm.y1 > maxY {
 			maxY = segm.y1
@@ -193,6 +130,12 @@ func findMaxY(segments []segment) int {
 		if segm.y2 > maxY {
 			maxY = segm.y2
 		}
+		if segm.x1 > maxX {
+			maxX = segm.x1
+		}
+		if segm.x2 > maxX {
+			maxX = segm.x2
+		}
 	}
-	return maxY
+	return maxX, maxY
 }
