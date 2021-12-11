@@ -10,6 +10,8 @@ import (
 	"strconv"
 )
 
+type Point struct { x,y int }
+
 func main() {
 
 	inputfile, err := os.Open("input")
@@ -32,8 +34,10 @@ func main() {
 			row = append(row, energylevel)
 		}
 		energyLevels = append(energyLevels, row)
-		numCols = len(row)
 		numRows++
+	}
+	if numRows > 0 {
+		numCols = len(energyLevels[numRows-1])
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -46,18 +50,30 @@ func main() {
 		for i, row := range energyLevels {
 			for j := range row {
 				if energyLevels[i][j] > 9 {
-					simulateFlashes(&energyLevels, j, i, numRows, numCols, &numFlashes)
+					simulateFlashes(&energyLevels, Point{x: j, y: i}, numRows, numCols, &numFlashes)
 				}
 			}
 		}
-		if resetFlashed(&energyLevels) == (numRows*numCols) {
-			fmt.Printf("Synchronized flash after %d steps.\n",n+1)
+		if n==99 {
+	    fmt.Printf("Number of flashes after 100 steps: %d\n", numFlashes)
+		}
+		if resetFlashed(&energyLevels) == (numRows * numCols) {
+			fmt.Printf("Synchronized flash after %d steps.\n", n+1)
 			break
 		}
 	}
+}
 
-	// fmt.Printf("Number of flashes after 100 steps: %d\n", numFlashes)
-
+func simulateFlashes(energyLevels *[][]int, pos Point, numRows int, numCols int, numFlashes *int) {
+	(*energyLevels)[pos.y][pos.x]++
+	if !((*energyLevels)[pos.y][pos.x] > 9) {
+		return
+	}
+	(*energyLevels)[pos.y][pos.x] = math.MinInt32
+	*numFlashes++
+	for _, p := range getNeighbours(numRows, numCols, pos) {
+		simulateFlashes(energyLevels, p, numRows, numCols, numFlashes)
+	}
 }
 
 func incrementAll(energyLevels *[][]int) {
@@ -68,7 +84,7 @@ func incrementAll(energyLevels *[][]int) {
 	}
 }
 
-func resetFlashed(energyLevels *[][]int) (numResets int){
+func resetFlashed(energyLevels *[][]int) (numResets int) {
 	for i, row := range *energyLevels {
 		for j := range row {
 			if (*energyLevels)[i][j] < 0 {
@@ -80,35 +96,30 @@ func resetFlashed(energyLevels *[][]int) (numResets int){
 	return numResets
 }
 
-func simulateFlashes(energyLevels *[][]int, posx int, posy int, numRows int, numCols int, numFlashes *int) {
-	(*energyLevels)[posy][posx]++
-	if !((*energyLevels)[posy][posx] > 9) {
-		return
-	}
-	(*energyLevels)[posy][posx] = math.MinInt32
-	*numFlashes++
-	if posx > 0 {
-		simulateFlashes(energyLevels, posx-1, posy, numRows, numCols, numFlashes)
-		if (posy + 1) < numRows {
-			simulateFlashes(energyLevels, posx-1, posy+1, numRows, numCols, numFlashes)
+func getNeighbours(rows int, cols int, pos Point) (neighbours []Point) {
+	if pos.x > 0 {
+		neighbours = append(neighbours, Point{y: pos.y, x: pos.x - 1})
+		if (pos.y + 1) < rows {
+			neighbours = append(neighbours, Point{y: pos.y + 1, x: pos.x - 1})
 		}
-		if posy > 0 {
-			simulateFlashes(energyLevels, posx-1, posy-1, numRows, numCols, numFlashes)
+		if pos.y > 0 {
+			neighbours = append(neighbours, Point{y: pos.y - 1, x: pos.x - 1})
 		}
 	}
-	if posy > 0 {
-		simulateFlashes(energyLevels, posx, posy-1, numRows, numCols, numFlashes)
+	if pos.y > 0 {
+		neighbours = append(neighbours, Point{y: pos.y - 1, x: pos.x})
 	}
-	if (posy + 1) < numRows {
-		simulateFlashes(energyLevels, posx, posy+1, numRows, numCols, numFlashes)
+	if (pos.y + 1) < rows {
+		neighbours = append(neighbours, Point{y: pos.y + 1, x: pos.x})
 	}
-	if (posx + 1) < numCols {
-		simulateFlashes(energyLevels, posx+1, posy, numRows, numCols, numFlashes)
-		if (posy + 1) < numRows {
-			simulateFlashes(energyLevels, posx+1, posy+1, numRows, numCols, numFlashes)
+	if (pos.x + 1) < cols {
+		neighbours = append(neighbours, Point{y: pos.y, x: pos.x + 1})
+		if (pos.y + 1) < rows {
+			neighbours = append(neighbours, Point{y: pos.y + 1, x: pos.x + 1})
 		}
-		if posy > 0 {
-			simulateFlashes(energyLevels, posx+1, posy-1, numRows, numCols, numFlashes)
+		if pos.y > 0 {
+			neighbours = append(neighbours, Point{y: pos.y - 1, x: pos.x + 1})
 		}
 	}
+	return neighbours
 }
